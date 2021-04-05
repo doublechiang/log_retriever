@@ -3,20 +3,8 @@ import os
 
 
 class QMFNetOp:
-    Station  = [
-        {
-        'ip': '192.168.0.81'
-        },
-        {
-        'ip': '192.168.0.82'
-        },
-        {
-        'ip': '192.168.0.83'
-        },
-        {
-        'ip': '192.168.0.84'
-        }
-    ]
+    Station  = '192.168.0.81 192.168.0.82 192.168.0.83 192.168.0.84'.split()
+    hopStation ='cchiang@192.168.66.28'
     """ QMF network operation
     """
     def querySn(self, sn):
@@ -31,24 +19,23 @@ class QMFNetOp:
         fn = os.path.basename(path)
         # Copy file to hop station 
         cmd = "scp root@{}:{} /tmp".format(ip, path)
-        cmd = self.__sshHop(cmd, 'cchiang@192.168.66.28')
+        cmd = self.__sshHop(cmd, QMFNetOp.hopStation)
         result = subprocess.run(cmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
 
         # copy from hop station to local station
-        cmd = "scp cchiang@192.168.66.28:/tmp/{} /tmp".format(fn)
+        cmd = "{}:/tmp/{} /tmp".format(QMFNetOp.hopStation, fn)
         result = subprocess.run(cmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
 
         # remove the temp file from hop station
-        cmd = "rm cchiang@192.168.66.28:/tmp/{}".format(fn)
+        cmd = "rm {host}:/tmp/{fn}".format(host=QMFNetOp.hopStation, fn=fn)
         return 
         
 
     def remote(self, cmd):
         found = []
-        for s in QMFNetOp.Station:
-            ip = s.get('ip')
+        for ip in QMFNetOp.Station:
             hopcmd = self.__sshHop(cmd, 'root@{}'.format(ip))
-            hopcmd = self.__sshHop(hopcmd, 'cchiang@192.168.66.28')
+            hopcmd = self.__sshHop(hopcmd, QMFNetOp.hopStation)
             print(hopcmd)
             result = subprocess.run(hopcmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
 
