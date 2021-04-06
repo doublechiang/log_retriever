@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import subprocess
 import os
 
@@ -23,7 +24,7 @@ class QMFNetOp:
         result = subprocess.run(cmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
 
         # copy from hop station to local station
-        cmd = "{}:/tmp/{} /tmp".format(QMFNetOp.hopStation, fn)
+        cmd = "scp {}:/tmp/{} /tmp".format(QMFNetOp.hopStation, fn)
         result = subprocess.run(cmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
 
         # remove the temp file from hop station
@@ -36,8 +37,12 @@ class QMFNetOp:
         for ip in QMFNetOp.Station:
             hopcmd = self.__sshHop(cmd, 'root@{}'.format(ip))
             hopcmd = self.__sshHop(hopcmd, QMFNetOp.hopStation)
+            print(subprocess.__file__)
             print(hopcmd)
-            result = subprocess.run(hopcmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
+            try:
+                result = subprocess.run(hopcmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
+            except Exception as inst:
+                print(inst)
 
             contents = result.stdout.splitlines()
             for r in contents:
