@@ -15,7 +15,7 @@
 <table>
     {% for r in found %}
     <tr>
-    <td>{{ r['file'] }}</td>
+    <td><a href={{ url_for('get_remotef', ip=r['ip'], file=r['file']) }}>{{ r['file'] }}</a></td>
     <td><form action={{ url_for('get_remotef') }} method="get">
             <input type="hidden" name="ip" value="{{ r['ip'] }}">
             <input type="hidden" name="file" value="{{ r['file'] }}">
