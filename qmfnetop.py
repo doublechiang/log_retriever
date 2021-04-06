@@ -51,8 +51,8 @@ class QMFNetOp:
         """
         hopcmd = self.__sshHop(cmd, 'root@{}'.format(ip))
         hopcmd = self.__sshHop(hopcmd, QMFNetOp.hopStation)
-        loggin.info(subprocess.__file__)
-        loggin.debug(hopcmd)
+        logging.info(subprocess.__file__)
+        logging.debug(hopcmd)
         try:
             result = subprocess.run(hopcmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
         except Exception as inst:
