@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import subprocess
 import os
+import threading
+import logging
 
 
 class QMFNetOp:
@@ -9,8 +11,18 @@ class QMFNetOp:
     """ QMF network operation
     """
     def querySn(self, sn):
+        found = []
+        threads = []
         cmd = "find /RACKLOG/ -type f -name *{}*".format(sn)
-        return self.remote(cmd)
+        for ip in QMFNetOp.Station:
+            x=threading.Thread(target=self.remoteJob, args=(found, ip, cmd))
+            threads.append(x)
+            x.start()
+
+        for index, thread in enumerate(threads):
+            thread.join()
+        
+        return found
 
 
     def scp(self, ip, path):
@@ -28,35 +40,39 @@ class QMFNetOp:
         result = subprocess.run(cmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
 
         # remove the temp file from hop station
-        cmd = "rm {host}:/tmp/{fn}".format(host=QMFNetOp.hopStation, fn=fn)
+        cmd = "ssh {host} rm /tmp/{fn}".format(host=QMFNetOp.hopStation, fn=fn)
+        # TODO, add thread here to speed up process
+        result = subprocess.run(cmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
         return 
         
 
-    def remote(self, cmd):
-        found = []
-        for ip in QMFNetOp.Station:
-            hopcmd = self.__sshHop(cmd, 'root@{}'.format(ip))
-            hopcmd = self.__sshHop(hopcmd, QMFNetOp.hopStation)
-            print(subprocess.__file__)
-            print(hopcmd)
-            try:
-                result = subprocess.run(hopcmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
-            except Exception as inst:
-                print(inst)
+    def remoteJob(self, found, ip, cmd):
+        """ Execute the cmd on the remote server
+        """
+        hopcmd = self.__sshHop(cmd, 'root@{}'.format(ip))
+        hopcmd = self.__sshHop(hopcmd, QMFNetOp.hopStation)
+        loggin.info(subprocess.__file__)
+        loggin.debug(hopcmd)
+        try:
+            result = subprocess.run(hopcmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
+        except Exception as inst:
+            print(inst)
 
-            contents = result.stdout.splitlines()
-            for r in contents:
-                line=dict()
-                line['ip']=ip
-                line['file']=r
-                found.append(line)
+        contents = result.stdout.splitlines()
+        for r in contents:
+            line=dict()
+            line['ip']=ip
+            line['file']=r
+            found.append(line)
+        logging.debug("{} done!".format(cmd))
+        return
                 
-        return found
 
     def __sshHop(self, cmd, hop):
         return "ssh {} {}".format(hop, cmd)
 
 if __name__ == "__main__":
+    pass
     # s= QMFNetOp().remote('find /RACKLOG/ -type f -name ZNH02200016.* ' )
     # QMFNetOp().querySn('ZNH02200016')
-    QMFNetOp().scp('192.168.0.81', '/RACKLOG/S2PL_PY/2020/Aug12/ZNH02200016/RUNIN/ZNH02200016.log')
+    # QMFNetOp().scp('192.168.0.81', '/RACKLOG/S2PL_PY/2020/Aug12/ZNH02200016/RUNIN/ZNH02200016.log')

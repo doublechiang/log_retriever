@@ -12,3 +12,6 @@ $ export FLASK_ENV=development
 # run the server
 $ export FLASK_APP=hello.py
 $ python -m flask run
+
+# Deployment with Apache wsgi
+$ yum install python-flask
