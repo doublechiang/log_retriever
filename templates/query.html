@@ -21,19 +21,24 @@
 </form>
 <br/>
 <br/>
-{% if found %}
-<table>
-    <tr><th>File</th><th>Size</th><th>Date</th></tr>
-    {% for r in found %}
-    <tr>
-    <td><a href={{ url_for('get_remotef', ip=r['ip'], file=r['file']) }}>{{ r['file'] }}</a></td>
-    <td>{{ r['size'] }}</td>
-    <td>{{ r['date'] }}</td>
-    </tr>
-    {% endfor %}
-</table>
 
+{% if found is not none %}
+  {% if found | length == 0 %}
+    <p> There is no file matching the SN found.</p>
+  {% else %}
+    <table>
+        <tr><th>File</th><th>Size</th><th>Date</th></tr>
+          {% for r in found %}
+          <tr>
+          <td><a href={{ url_for('get_remotef', ip=r['ip'], file=r['file']) }}>{{ r['file'] }}</a></td>
+          <td>{{ r['size'] }}</td>
+          <td>{{ r['date'] }}</td>
+          </tr>
+          {% endfor %}
+    </table>
+  {% endif %}
 {% endif %}
+
 </body>
 
 <hr class="solid">
