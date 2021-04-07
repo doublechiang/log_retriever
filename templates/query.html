@@ -4,7 +4,7 @@
 <body>
 <p>QMF Rack Logs Query Service</p>
 <img src={{ url_for('static', filename='one-piece-live-action.jpg') }}></img><br/><br/>
-<form action={{ url_for('qsn') }} method="post">
+<form action={{ url_for('log_query') }} method="post">
     <label>Enter SN number here to query</label>
     <input type="text" name="sn"></input>
     <input type="submit" value="submit"></input>

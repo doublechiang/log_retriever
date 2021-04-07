@@ -9,9 +9,13 @@ import qmfnetop
 app = Flask(__name__)
 app.config['APPLICATION_ROOT'] = 'racklog'
 
-@app.route('/')
+@app.route('/', methods=['get', 'post'])
 def log_query():
-    return  render_template('query.html')
+    found = None
+    if request.method == 'POST':
+        sn=request.form.get('sn')
+        found = qmfnetop.QMFNetOp().querySn(sn)
+    return  render_template('query.html', found=found)
 
 @app.route('/get_remotef')
 def get_remotef():
@@ -21,13 +25,7 @@ def get_remotef():
     fn=os.path.basename(fpath)
     return send_file("/tmp/{}".format(fn), as_attachment=True)
 
-@app.route('/qsn', methods=['post'])
-def qsn():
-    if request.method == 'POST':
-        sn=request.form.get('sn')
-        found = qmfnetop.QMFNetOp().querySn(sn)
-        return render_template('query.html', found=found)
-     
+    
 
 if __name__ == '__main__':
     app.run(port=5000)
