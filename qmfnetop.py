@@ -28,20 +28,24 @@ class QMFNetOp:
     def scp(self, ip, path):
         """ Copy file to a temporary file location
         """
-
+        logging.info("Copy file {} form ip {}".format(path, ip))
+        path= path.replace('[', '\[').replace(']', '\]')
         fn = os.path.basename(path)
         # Copy file to hop station 
-        cmd = "scp root@{}:{} /tmp".format(ip, path)
+        cmd = "scp root@{}:'{}' /tmp".format(ip, path)
         cmd = self.__sshHop(cmd, QMFNetOp.hopStation)
+        logging.debug(cmd)
         result = subprocess.run(cmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
 
         # copy from hop station to local station
         cmd = "scp {}:/tmp/{} /tmp".format(QMFNetOp.hopStation, fn)
+        logging.debug(cmd)
         result = subprocess.run(cmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
 
         # remove the temp file from hop station
         cmd = "ssh {host} rm /tmp/{fn}".format(host=QMFNetOp.hopStation, fn=fn)
         # TODO, add thread here to speed up process
+        logging.debug(cmd)
         result = subprocess.run(cmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
         return 
         
@@ -75,6 +79,10 @@ class QMFNetOp:
 
     def __sshHop(self, cmd, hop):
         return "ssh {} {}".format(hop, cmd)
+
+    def __init__(self):
+        logging.basicConfig(level=logging.INFO)
+        #logging.basicConfig(level=logging.DEBUG)
 
 if __name__ == "__main__":
     pass
