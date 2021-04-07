@@ -13,7 +13,7 @@ class QMFNetOp:
     def querySn(self, sn):
         found = []
         threads = []
-        cmd = "find /RACKLOG/ -type f -name *{}*".format(sn)
+        cmd = "find /RACKLOG/ -type f -name *{}* -exec ls -lhgG --time-style=long-iso {{}} +".format(sn)
         for ip in QMFNetOp.Station:
             x=threading.Thread(target=self.remoteJob, args=(found, ip, cmd))
             threads.append(x)
@@ -62,7 +62,12 @@ class QMFNetOp:
         for r in contents:
             line=dict()
             line['ip']=ip
-            line['file']=r
+            # parsing ls -l output
+            # line['file']=r
+            line['size'] = r.split()[2]
+            line['date'] = r.split()[3] + ' ' + r.split()[4]
+            line['file'] = r.split()[5]
+            logging.info(line)
             found.append(line)
         logging.debug("{} done!".format(cmd))
         return
