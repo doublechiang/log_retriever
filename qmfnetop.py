@@ -27,26 +27,24 @@ class QMFNetOp:
 
     def scp(self, ip, path):
         """ Copy file to a temporary file location
+            copy without middle file system.
+            estable password less login 
+            ssh-copy-id -o ProxyCommand="ssh -W %h:%p cchiang@192.168.66.28" root@192.168.0.84
+            scp -o ProxyCommand="ssh -W %h:%p cchiang@192.168.66.28" root@192.168.0.83:[file] /tmp
         """
+        
         logging.info("Copy file {} form ip {}".format(path, ip))
-        path= path.replace('[', '\[').replace(']', '\]')
+        path= path.replace('[', '\[').replace(']', '\]').replace('(', '\(').replace(')', '\)')
+        # .replace('(', '\(').replace(')', '\)')
         fn = os.path.basename(path)
         # Copy file to hop station 
-        cmd = "scp root@{}:'{}' /tmp".format(ip, path)
-        cmd = self.__sshHop(cmd, QMFNetOp.hopStation)
+        cmd = "scp -o ProxyCommand=\"ssh -W %h:%p {}\" root@{}:'{}' /tmp".format(QMFNetOp.hopStation, ip, path)
         logging.debug(cmd)
-        result = subprocess.run(cmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
 
-        # copy from hop station to local station
-        cmd = "scp {}:/tmp/{} /tmp".format(QMFNetOp.hopStation, fn)
-        logging.debug(cmd)
-        result = subprocess.run(cmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
+        # using subprocess run will have problem when copy filename with brace.
+        #result = subprocess.run(cmds, universal_newlines=True, stdout=subprocess.PIPE)
+        os.system(cmd)
 
-        # remove the temp file from hop station
-        cmd = "ssh {host} rm /tmp/{fn}".format(host=QMFNetOp.hopStation, fn=fn)
-        # TODO, add thread here to speed up process
-        logging.debug(cmd)
-        result = subprocess.run(cmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
         return 
         
 
