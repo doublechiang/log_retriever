@@ -1,15 +1,28 @@
 <!doctype html>
 <html>
 <title>Rack Logs Query Service</title>
+<header>
+  <script src="static/sorttable.js"></script>
+</header>
 <style>
   th, td {
     text-align: left;
   }
   tr:nth-child(even) {background-color: lightgray;}  
   footer {
-  padding: 3px;
-  font-size: 10px;
-}
+    padding: 3px;
+    font-size: 10px;
+  }
+  /* Sortable tables */
+  table.sortable thead {
+      background-color:#eee;
+      color:#666666;
+      font-weight: bold;
+      cursor: default;
+  }
+  table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after { 
+    content: " \25B4\25BE" 
+  }
 </style>
 <body>
 <p>QMF Rack Logs Query Service</p>
@@ -26,7 +39,7 @@
   {% if found | length == 0 %}
     <p> There is no file matching the SN found.</p>
   {% else %}
-    <table>
+    <table class="sortable">
         <tr><th>File</th><th>Size</th><th>Date</th></tr>
           {% for r in found %}
           <tr>
