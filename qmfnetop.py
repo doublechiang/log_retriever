@@ -13,16 +13,17 @@ class QMFNetOp:
     def querySn(self, sn):
         found = []
         threads = []
+        error = dict()
         cmd = "find /RACKLOG/ -type f -name *{}* -exec ls -lhgG --time-style=long-iso {{}} +".format(sn)
         for ip in QMFNetOp.Station:
-            x=threading.Thread(target=self.remoteJob, args=(found, ip, cmd))
+            x=threading.Thread(target=self.remoteJob, args=(found, ip, cmd, error))
             threads.append(x)
             x.start()
 
         for index, thread in enumerate(threads):
             thread.join()
         
-        return found
+        return found, error
 
 
     def scp(self, ip, path):
@@ -48,17 +49,19 @@ class QMFNetOp:
         return 
         
 
-    def remoteJob(self, found, ip, cmd):
+    def remoteJob(self, found, ip, cmd, error):
         """ Execute the cmd on the remote server
         """
         hopcmd = self.__sshHop(cmd, 'root@{}'.format(ip))
         hopcmd = self.__sshHop(hopcmd, QMFNetOp.hopStation)
         logging.info(subprocess.__file__)
         logging.debug(hopcmd)
+        error[ip] = "searched"
         try:
-            result = subprocess.run(hopcmd.split(), universal_newlines=True, stdout=subprocess.PIPE)
+            result = subprocess.run(hopcmd.split(), universal_newlines=True, stdout=subprocess.PIPE, check=True)
         except Exception as inst:
-            print(inst)
+            error[ip] = inst
+            return
 
         contents = result.stdout.splitlines()
         for r in contents:
@@ -80,7 +83,7 @@ class QMFNetOp:
 
     def __init__(self):
         logging.basicConfig(level=logging.INFO)
-        #logging.basicConfig(level=logging.DEBUG)
+        # logging.basicConfig(level=logging.DEBUG)
 
 if __name__ == "__main__":
     pass

@@ -12,10 +12,11 @@ app.config['APPLICATION_ROOT'] = 'racklog'
 @app.route('/', methods=['get', 'post'])
 def log_query():
     found = None
+    search_lst=dict()
     if request.method == 'POST':
         sn=request.form.get('sn')
-        found = qmfnetop.QMFNetOp().querySn(sn)
-    return  render_template('query.html', found=found)
+        found, search_lst = qmfnetop.QMFNetOp().querySn(sn)
+    return  render_template('query.html', found=found, search_lst = search_lst)
 
 @app.route('/get_remotef')
 def get_remotef():

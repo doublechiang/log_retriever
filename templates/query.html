@@ -36,6 +36,18 @@
 <br/>
 
 {% if found is not none %}
+<table>
+  <tr><th>IP Searched</th><th>Status</th></tr>
+  {% for ip, str in search_lst.items() %}
+  <tr>
+    <td>{{ip}}</td>
+    <td>{{str}}</td>
+  </tr>
+  {% endfor %}
+
+</table>
+<br/><br/>
+
   {% if found | length == 0 %}
     <p> There is no file matching the SN found.</p>
   {% else %}
