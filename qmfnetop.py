@@ -14,7 +14,9 @@ class QMFNetOp:
         found = []
         threads = []
         error = dict()
-        cmd = "find /RACKLOG/ -type f -name *{}* -exec ls -lhgG --time-style=long-iso {{}} +".format(sn)
+        # ls -1rt
+        # -t     sort by modification time
+        cmd = "find /RACKLOG/ -type f -name *{}* -exec ls -tlhgG --time-style=long-iso {{}} +".format(sn)
         for ip in QMFNetOp.Station:
             x=threading.Thread(target=self.remoteJob, args=(found, ip, cmd, error))
             threads.append(x)

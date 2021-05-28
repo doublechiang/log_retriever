@@ -28,8 +28,6 @@
 <p>QMF Rack Logs Query Service</p>
 <img src={{ url_for('static', filename='one-piece-live-action.jpg') }}></img><br/><br/>
 <form action={{ url_for('log_query') }} method="post">
-  <p>Use chassis serial number as your search key for single node.   For multi-node chassis, use product/sled serial number first; and mainboard serial number if the former failed to locate the test logs.</p>
-  <p>Rule of thumb is to check most recent FST pass record first since it was the final log we collected on each shipped system.</p>
   <label>Enter SN number here to query:</label>
     <input type="text" name="sn"></input>
     <input type="submit" value="submit"></input><br/>
@@ -55,6 +53,8 @@
   {% endif %}
 
   <br/><br/>
+  <p>Use chassis serial number as your search key for single node.   For multi-node chassis, use product/sled serial number first; and mainboard serial number if the former failed to locate the test logs.</p>
+  <p>Rule of thumb is to check most recent FST pass record first since it was the final log we collected on each shipped system.</p>
   <table>
     <tr><th>IP Searched</th><th>Status</th></tr>
     {% for ip, str in search_lst.items() %}
