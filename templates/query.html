@@ -44,7 +44,7 @@
         <tr><th>File</th><th>Size</th><th>Date</th></tr>
           {% for r in found %}
           <tr>
-          <td><a href={{ url_for('get_remotef', ip=r['ip'], file=r['file']) }}>{{ r['file'] }}</a></td>
+          <td><a href={{ url_for('get_remotef', ip=r['ip'], file=r['file'], date=r['date']) }}>{{ r['file'] }}</a></td>
           <td>{{ r['size'] }}</td>
           <td>{{ r['date'] }}</td>
           </tr>
