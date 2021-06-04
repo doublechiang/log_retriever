@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import os
-from flask import Flask, request, render_template, url_for
+from flask import Flask, request, redirect, render_template, url_for
 from flask import send_file
 
 # local import
@@ -15,8 +15,15 @@ def log_query():
     search_lst=dict()
     if request.method == 'POST':
         sn=request.form.get('sn')
-        found, search_lst = qmfnetop.QMFNetOp().querySn(sn)
+        return redirect(url_for('search', sn=sn))
     return  render_template('query.html', found=found, search_lst = search_lst)
+
+
+@app.route('/query/<sn>')
+def search(sn):
+    found, search_lst = qmfnetop.QMFNetOp().querySn(sn)
+    return render_template('query.html', found=found, search_lst = search_lst)
+
 
 @app.route('/get_remotef')
 def get_remotef():
