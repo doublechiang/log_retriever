@@ -16,7 +16,7 @@ class QMFNetOp:
         error = dict()
         # ls -1rt
         # -t     sort by modification time
-        cmd = "find /RACKLOG/ -type f -name *{}* -exec ls -tlhgG --time-style=long-iso {{}} +".format(sn)
+        cmd = "find /RACKLOG/ -type f -iname *{}* -exec ls -tlhgG --time-style=long-iso {{}} +".format(sn)
         for ip in QMFNetOp.Station:
             x=threading.Thread(target=self.remoteJob, args=(found, ip, cmd, error))
             threads.append(x)
@@ -90,5 +90,5 @@ class QMFNetOp:
 if __name__ == "__main__":
     pass
     # s= QMFNetOp().remote('find /RACKLOG/ -type f -name ZNH02200016.* ' )
-    # QMFNetOp().querySn('ZNH02200016')
+    QMFNetOp().querySn('B98340412317603B')
     # QMFNetOp().scp('192.168.0.81', '/RACKLOG/S2PL_PY/2020/Aug12/ZNH02200016/RUNIN/ZNH02200016.log')
