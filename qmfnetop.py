@@ -6,7 +6,7 @@ import logging
 
 
 class QMFNetOp:
-    Station  = '192.168.0.81 192.168.0.82 192.168.0.83 192.168.0.84 192.168.0.101 192.168.0.130 192.168.0.123'.split()
+    Station  = 'root@192.168.0.81 root@192.168.0.82 root@192.168.0.83 root@192.168.0.84 root@192.168.0.101 root@192.168.0.130 root@192.168.0.123 log@192.168.0.210'.split()
     hopStation ='cchiang@192.168.66.28'
     """ QMF network operation
     """
@@ -41,7 +41,7 @@ class QMFNetOp:
         # .replace('(', '\(').replace(')', '\)')
         fn = os.path.basename(path)
         # Copy file to hop station 
-        cmd = "scp -o ProxyCommand=\"ssh -W %h:%p {}\" root@{}:'{}' /tmp".format(QMFNetOp.hopStation, ip, path)
+        cmd = "scp -o ProxyCommand=\"ssh -W %h:%p {}\" {}:'{}' /tmp".format(QMFNetOp.hopStation, ip, path)
         logging.debug(cmd)
 
         # using subprocess run will have problem when copy filename with brace.
@@ -54,7 +54,7 @@ class QMFNetOp:
     def remoteJob(self, found, ip, cmd, error):
         """ Execute the cmd on the remote server
         """
-        hopcmd = self.__sshHop(cmd, 'root@{}'.format(ip))
+        hopcmd = self.__sshHop(cmd, '{}'.format(ip))
         hopcmd = self.__sshHop(hopcmd, QMFNetOp.hopStation)
         logging.info(subprocess.__file__)
         logging.debug(hopcmd)
