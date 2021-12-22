@@ -6,7 +6,7 @@ import logging
 
 
 class QMFNetOp:
-    Station  = 'root@192.168.0.81 root@192.168.0.82 root@192.168.0.83 root@192.168.0.84 root@192.168.0.101 root@192.168.0.130 root@192.168.0.123 log@192.168.0.210 log@192.168.0.211 log@192.168.0.212 log@192.168.0.213 log@192.168.0.214 log@192.168.0.215'.split()
+    Station  = 'root@192.168.0.81 root@192.168.0.82 root@192.168.0.83 root@192.168.0.84 root@192.168.0.101 root@192.168.0.123'.split()
     hopStation ='cchiang@192.168.66.28'
     """ QMF network operation
     """
