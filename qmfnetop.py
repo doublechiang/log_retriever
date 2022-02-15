@@ -4,6 +4,7 @@ import os
 import threading
 import logging
 import yaml
+from datetime import datetime
 
 
 class QMFNetOp:
@@ -24,9 +25,10 @@ class QMFNetOp:
 
         for index, thread in enumerate(threads):
             thread.join()
-        
-        return found, error
 
+        # The search result append into the list by multiple thread.
+        found.sort(reverse=True, key=lambda d: datetime.strptime(d['date'], "%Y-%m-%d %H:%M"))
+        return found, error
 
     def scp(self, ip, path):
         """ Copy file to a temporary file location
@@ -54,13 +56,12 @@ class QMFNetOp:
         
 
     def remoteJob(self, found, ip, cmd, error):
-        """ Execute the cmd on the remote server
+        """ Execute the find cmd on the remote server, the return the dict of the result
         """
         hopcmd = self.__sshHop(cmd, '{}'.format(ip))
         if self.hop is not None:
             hopcmd = self.__sshHop(hopcmd, self.hop)
-        logging.info(subprocess.__file__)
-        logging.debug(hopcmd)
+        logging.debug("Running command {}".format(hopcmd))
         error[ip] = "searched"
         try:
             result = subprocess.run(hopcmd.split(), universal_newlines=True, stdout=subprocess.PIPE, check=True)
@@ -77,9 +78,9 @@ class QMFNetOp:
             line['size'] = r.split()[2]
             line['date'] = r.split()[3] + ' ' + r.split()[4]
             line['file'] = r.split()[5]
-            logging.info(line)
+            logging.debug(line)
             found.append(line)
-        logging.debug("{} done!".format(cmd))
+        # logging.debug("{} done!".format(cmd))
         return
                 
 
