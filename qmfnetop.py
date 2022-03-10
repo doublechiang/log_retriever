@@ -59,8 +59,8 @@ class QMFNetOp:
         """ Execute the find cmd on the remote server, the return the dict of the result
         """
         hopcmd = self.__sshHop(cmd, '{}'.format(ip))
-        if self.hop is not None:
-            hopcmd = self.__sshHop(hopcmd, self.hop)
+        if self.hopStation is not None:
+            hopcmd = self.__sshHop(hopcmd, self.hopStation)
         logging.debug("Running command {}".format(hopcmd))
         error[ip] = "searched"
         try:
@@ -94,13 +94,13 @@ class QMFNetOp:
         ts = log_cfg.get('STATIONS')
         if ts is not None:
             self.ts = ts.split(',')
-        self.hop = log_cfg.get('hopStation')
+        self.hopStation = log_cfg.get('hopStation')
         
 
     def __init__(self):
         logging.basicConfig(level=logging.INFO)
         # logging.basicConfig(level=logging.DEBUG)
-        self.hop = None
+        self.hopStation = None
         self.ts = []
         self.__readSettings()
 
