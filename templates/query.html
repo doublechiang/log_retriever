@@ -1,34 +1,11 @@
-<!doctype html>
-<html>
-<title>Rack Logs Query Service</title>
-<header>
-  <script src="{{ url_for('static', filename='sorttable.js') }}"></script>
-</header>
-<style>
-  th, td {
-    text-align: left;
-  }
-  tr:nth-child(even) {background-color: lightgray;}  
-  footer {
-    padding: 3px;
-    font-size: 10px;
-  }
-  /* Sortable tables */
-  table.sortable thead {
-      background-color:#eee;
-      color:#666666;
-      font-weight: bold;
-      cursor: default;
-  }
-  table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after { 
-    content: " \25B4\25BE" 
-  }
-</style>
-<body>
-<p>QMF Rack Logs Query Service</p>
-<img src={{ url_for('static', filename='one-piece-live-action.jpg') }}></img><br/><br/>
+{% extends 'base.html' %}
+
+{% block content %}
+{% block title %} QMF Log Search Service {% endblock %}<br/><br/>
+
+<!-- <img src={{ url_for('static', filename='one-piece-live-action.jpg') }}></img><br/><br/> -->
 <form action={{ url_for('log_query') }} method="post">
-  <label>Enter SN number here to query:</label>
+  <label>Enter SN number here to search</label>
     <input type="text" name="sn"></input>
     <input type="submit" value="submit"></input><br/>
 </form>
@@ -52,9 +29,6 @@
     </table>
   {% endif %}
 
-  <br/><br/>
-  <p>Use chassis serial number as your search key for single node.   For multi-node chassis, use product/sled serial number first; and mainboard serial number if the former failed to locate the test logs.</p>
-  <p>Rule of thumb is to check most recent FST pass record first since it was the final log we collected on each shipped system.</p>
   <table>
     <tr><th>IP Searched</th><th>Status</th></tr>
     {% for ip, str in search_lst.items() %}
@@ -65,23 +39,6 @@
     {% endfor %}
   
   </table>
-  
-
 
 {% endif %}
-
-</body>
-
-<hr class="solid">
-<footer>
-  <p>Project source, issue report, comments please go to <a href="https://github.com/doublechiang/QMFRacklog">https://github.com/doublechiang/QMFRacklog</a></p></p>
-</footer>
-</html>
-
-<!--
-{% if name %}
-  <h1>Hello {{ name }}!</h1>
-{% else %}
-  <h1>Hello, World!</h1>
-{% endif %}
--->
+{% endblock %}
