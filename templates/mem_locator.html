@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% block title %} Memory Error Locator {% endblock %}<br/><br/>
+
+<form action={{ url_for('memloc') }} method="post">
+  <label>Enter SN number here to search:</label>
+    <input type="text" name="sn"></input>
+    <input type="submit" value="submit"></input><br/>
+</form>
+<br/>
+<br/>
+
+{% if found is not none %}
+
+  {% if found | length == 0 %}
+    <p> There is no file matching the SN found.</p>
+  {% else %}
+    <table>
+      {% for line in found %}
+        <tr><td>{{ line }}</td></tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+
+{% endif %}
+
+{% endblock %}

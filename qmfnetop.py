@@ -5,6 +5,9 @@ import threading
 import logging
 import yaml
 from datetime import datetime
+import queue
+
+import pxe
 
 
 class QMFNetOp:
@@ -12,25 +15,33 @@ class QMFNetOp:
     """ QMF network operation
     """
     def querySn(self, sn):
-        found = []
         threads = []
+        found = []
         error = dict()
+        out_que = queue.Queue()
+
+        if sn is None:
+            return found, error
         # ls -1rt
         # -t     sort by modification time
         cmd = "find /RACKLOG/ -type f -iname *{}* -exec ls -tlhgG --time-style=long-iso {{}} +".format(sn)
-        for ip in self.ts:
-            x=threading.Thread(target=self.remoteJob, args=(found, ip, cmd, error))
+        for p in self.pxes:
+            x=threading.Thread(target=p.find_file, args=(cmd, out_que))
             threads.append(x)
             x.start()
 
         for index, thread in enumerate(threads):
             thread.join()
 
+        while not out_que.empty():
+            line = out_que.get()
+            found.append(line)
+
         # The search result append into the list by multiple thread.
         found.sort(reverse=True, key=lambda d: datetime.strptime(d['date'], "%Y-%m-%d %H:%M"))
-        return found, error
+        return (found, error)
 
-    def scp(self, ip, path):
+    def scp(self, ip, path, dest):
         """ Copy file to a temporary file location
             copy without middle file system.
             estable password less login 
@@ -42,67 +53,38 @@ class QMFNetOp:
         path= path.replace('[', '\[').replace(']', '\]').replace('(', '\(').replace(')', '\)')
         # .replace('(', '\(').replace(')', '\)')
         fn = os.path.basename(path)
-        # Copy file to hop station 
-        cmd = "scp {}:'{}' /tmp".format(ip, path)
-        if self.hopStation is not None:
-            cmd = "scp -o ProxyCommand=\"ssh -W %h:%p {}\" {}:'{}' /tmp".format(self.hopStation, ip, path)
-        logging.debug(cmd)
 
-        # using subprocess run will have problem when copy filename with brace.
-        #result = subprocess.run(cmds, universal_newlines=True, stdout=subprocess.PIPE)
-        os.system(cmd)
-
-        return 
-        
-
-    def remoteJob(self, found, ip, cmd, error):
-        """ Execute the find cmd on the remote server, the return the dict of the result
-        """
-        hopcmd = self.__sshHop(cmd, '{}'.format(ip))
-        if self.hopStation is not None:
-            hopcmd = self.__sshHop(hopcmd, self.hopStation)
-        logging.debug("Running command {}".format(hopcmd))
-        error[ip] = "searched"
-        try:
-            result = subprocess.run(hopcmd.split(), universal_newlines=True, stdout=subprocess.PIPE, check=True)
-        except Exception as inst:
-            error[ip] = inst
-            return
-
-        contents = result.stdout.splitlines()
-        for r in contents:
-            line=dict()
-            line['ip']=ip
-            # parsing ls -l output
-            # line['file']=r
-            line['size'] = r.split()[2]
-            line['date'] = r.split()[3] + ' ' + r.split()[4]
-            line['file'] = r.split()[5]
-            logging.debug(line)
-            found.append(line)
-        # logging.debug("{} done!".format(cmd))
+        # Locate the PXE instance
+        for p in self.pxes:
+            if ip in p.__str__():
+                p.scp(path, dest)
+                break
         return
-                
 
-    def __sshHop(self, cmd, hop):
-        return "ssh {} {}".format(hop, cmd)
+    def locate_men(self, sn=None):
+        if sn is None:
+            return None, None
 
-    def __readSettings(self):
-        with open(QMFNetOp.SETTTINGS_FILE, 'r') as cfg:
-            log_cfg = yaml.safe_load(cfg)
+        found, search_lst = self.querySn(sn)
+        # Get first file and download the content.
+        f = found [0]
+        path = f.get('file')
+        self.scp(f.get('ip'), path, '/tmp')
+        fname = os.path.basename(path)
+        cmd = f"grep 'section_type: memory error' /tmp/{fname} -m 1 -B 1"
+        output = subprocess.check_output(cmd, shell=True, universal_newlines = False).decode('utf-8').splitlines()
+        return output, []
 
-        ts = log_cfg.get('STATIONS')
-        if ts is not None:
-            self.ts = ts.split(',')
-        self.hopStation = log_cfg.get('hopStation')
-        
 
     def __init__(self):
         logging.basicConfig(level=logging.INFO)
         # logging.basicConfig(level=logging.DEBUG)
-        self.hopStation = None
-        self.ts = []
-        self.__readSettings()
+
+        with open(QMFNetOp.SETTTINGS_FILE, 'r') as cfg:
+            log_cfg = yaml.safe_load(cfg)
+            ts = log_cfg.get('STATIONS').split()
+            hop = log_cfg.get('hopStation')
+            self.pxes = list(map(lambda x: pxe.Pxe(x, hop), ts))
 
 if __name__ == "__main__":
     pass
