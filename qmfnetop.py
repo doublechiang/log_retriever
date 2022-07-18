@@ -71,12 +71,15 @@ class QMFNetOp:
         path = f.get('file')
         self.scp(f.get('ip'), path, '/tmp')
         fname = os.path.basename(path)
-        cmd = f"grep 'section_type: memory error' /tmp/{fname} -m 1 -B 1"
-        output = subprocess.check_output(cmd, shell=True, universal_newlines = False).decode('utf-8').splitlines()
+        cmd = f"grep 'section_type: memory error' /tmp/{fname} -B 1"
+        try:
+            output = subprocess.check_output(cmd, shell=True, universal_newlines = False).decode('utf-8').splitlines()
+        except:
+            return ["No trouble found"], []
         return output, []
 
 
-    def __init__(self):
+    def __init__(self): 
         logging.basicConfig(level=logging.INFO)
         # logging.basicConfig(level=logging.DEBUG)
 
