@@ -26,11 +26,10 @@
 </style>
 <body>
 
-  <nav>
-  <a href="{{ url_for('search') }}">Log Search</a> |
-  <a href="{{ url_for('memloc') }}">DIMM Error Locator</a> |
-  </nav>
+  <header>
+    {% include "_navigation.html" %}
 
+  </header>
   <div class="content">
       {% block content %} {% endblock %}
   </div>
