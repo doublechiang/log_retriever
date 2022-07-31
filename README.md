@@ -19,4 +19,9 @@ $ python3 -m unittest
 $ python -m flask run
 
 # Deployment with Apache wsgi on CentOS.
-$ yum install python-flask
+$ yum install python3-flask
+$ yum install python3-mod_wsgi
+
+ln -s the conf file to apache conf.d folder
+ln -s (abs_path)/QMFRacklog.conf /etc/httpd/conf.d/
+
