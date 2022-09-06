@@ -14,7 +14,7 @@ def log_query():
     found = None
     search_lst=dict()
     if request.method == 'POST':
-        sn=request.form.get('sn')
+        sn=request.form.get('sn').strip()
         return redirect(url_for('search', sn=sn))
     return  render_template('query.html', found=found, search_lst = search_lst)
 
