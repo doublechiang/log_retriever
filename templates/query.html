@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
+<title>QMF Log Search Service</title><br/><br/>
 {% block content %}
-{% block title %} QMF Log Search Service {% endblock %}<br/><br/>
 
 <!-- <img src={{ url_for('static', filename='one-piece-live-action.jpg') }}></img><br/><br/> -->
 <form action={{ url_for('log_query') }} method="post">
