@@ -7,7 +7,7 @@ import os
 class Pxe:
     def cmd(self, cmd):
         """ @brief Execute the cmd and return the output of result
-            @return tuple of the return code
+            @return list if the files or the exception
         """
         remote_cmd = f"ssh {self.hostn} {cmd}"
         if self.hop is not None:
@@ -15,18 +15,22 @@ class Pxe:
         logging.debug("Running command {}, hop:".format(remote_cmd, self.hop))
         try:
             result = subprocess.run(remote_cmd.split(), universal_newlines=True, stdout=subprocess.PIPE, check=True)
-        except Exception as inst:
+        except Exception as error:
             # CalledProcesError
-            logging.error(f"{inst}")
-            error = inst
-            return []
+            logging.error(error)
+            return error
 
         return result.stdout.splitlines()
 
     def find_file(self, cmd, out_que:queue.Queue):
-        """ This is thread function, use a global variable to transfer the result 
+        """ This is thread function, use a global queue to transfer the result 
         """
         contents = self.cmd(cmd)
+
+        if type(contents) is subprocess.CalledProcessError:
+            out_que.put(contents)
+            return
+
         for r in contents:
             line=dict()
             line['ip']=self.hostn.split('@')[1]
@@ -37,6 +41,7 @@ class Pxe:
             line['file'] = r.split()[5]
             logging.debug(f"file:{line}")
             out_que.put(line)
+        return
 
     def scp(self, source, dest):
         """ copy the file, support a hop station, need password less login.

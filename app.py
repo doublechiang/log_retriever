@@ -23,8 +23,8 @@ def log_query():
 @app.route('/query/')
 @app.route('/query/<sn>')
 def search(sn=None):
-    found, search_lst = qmfnetop.QMFNetOp().querySn(sn)
-    return render_template('query.html', found=found, search_lst = search_lst)
+    found, error = qmfnetop.QMFNetOp().querySn(sn)
+    return render_template('query.html', found=found, error=error)
 
 
 @app.route('/get_remotef')

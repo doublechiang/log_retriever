@@ -17,7 +17,8 @@ class QMFNetOp:
     def querySn(self, sn):
         threads = []
         found = []
-        error = dict()
+        error = []
+        # collect thread call request from quque
         out_que = queue.Queue()
 
         if sn is None:
@@ -35,11 +36,14 @@ class QMFNetOp:
 
         while not out_que.empty():
             line = out_que.get()
-            found.append(line)
+            if type(line) is subprocess.CalledProcessError:
+                error.append(line)
+            else:
+                found.append(line)
 
         # The search result append into the list by multiple thread.
         found.sort(reverse=True, key=lambda d: datetime.strptime(d['date'], "%Y-%m-%d %H:%M"))
-        return (found, error)
+        return found, error
 
     def scp(self, ip, path, dest):
         """ Copy file to a temporary file location

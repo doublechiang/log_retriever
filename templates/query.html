@@ -3,6 +3,12 @@
 <title>QMF Log Search Service</title><br/><br/>
 {% block content %}
 
+{% if error %}
+  {% for e in error %}
+  <h2 style="color:red;">{{e}}</h2>
+  {% endfor %}
+{% endif %}
+
 <!-- <img src={{ url_for('static', filename='one-piece-live-action.jpg') }}></img><br/><br/> -->
 <form action={{ url_for('log_query') }} method="post">
   <label>Enter SN number:</label>
@@ -28,17 +34,6 @@
           {% endfor %}
     </table>
   {% endif %}
-
-  <table>
-    <tr><th>IP Searched</th><th>Status</th></tr>
-    {% for ip, str in search_lst.items() %}
-    <tr>
-      <td>{{ip}}</td>
-      <td>{{str}}</td>
-    </tr>
-    {% endfor %}
-  
-  </table>
 
 {% endif %}
 {% endblock %}
