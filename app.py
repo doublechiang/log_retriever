@@ -9,28 +9,48 @@ import qmfnetop
 app = Flask(__name__)
 app.config['APPLICATION_ROOT'] = 'racklog'
 
-@app.route('/', methods=['get', 'post'])
+@app.route('/')
 def log_query():
-    found = None
-    search_lst=dict()
-    if request.method == 'POST':
-        sn=request.form.get('sn').strip()
-        return redirect(url_for('search', sn=sn))
-    return  render_template('query.html', found=found, search_lst = search_lst)
+    return redirect(url_for('search'))
 
 
 @app.route('/query')
-@app.route('/query/')
+@app.route('/query/', methods=['get', 'post'])
 @app.route('/query/<sn>')
 def search(sn=None):
+    found = None
+    error = []
+    if request.method == 'POST':
+        sn=request.form.get('sn').strip()
+        return redirect(url_for('search')+sn)
+
+    if sn is not None:
+        found, error = qmfnetop.QMFNetOp().querySnFromBackup(sn)
+    return render_template('query.html', found=found, error=error)
+
+@app.route('/queryDist')
+@app.route('/queryDist/', methods=['get', 'post'])
+@app.route('/queryDist/<sn>')
+def searchDist(sn=None):
+    if request.method == 'POST':
+        sn=request.form.get('sn').strip()
+        return redirect(url_for('searchDist')+sn)
+
     found, error = qmfnetop.QMFNetOp().querySn(sn)
     return render_template('query.html', found=found, error=error)
+
 
 
 @app.route('/get_remotef')
 def get_remotef():
     ip=request.args['ip']
     fpath=request.args['file']
+    if ip=='local':
+        if fpath.startswith('/data'):
+            return send_file(fpath)
+        else:
+            return 'Do not try to tamper it.'
+
     qmfnetop.QMFNetOp().scp(ip, fpath, '/tmp')
     fn=os.path.basename(fpath)
     return send_file("/tmp/{}".format(fn), as_attachment=True)

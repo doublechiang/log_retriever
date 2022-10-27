@@ -15,6 +15,9 @@ class QMFNetOp:
     """ QMF network operation
     """
     def querySn(self, sn):
+        """ parameter SN to query
+            return the list of found and the error
+        """
         threads = []
         found = []
         error = []
@@ -44,6 +47,27 @@ class QMFNetOp:
         # The search result append into the list by multiple thread.
         found.sort(reverse=True, key=lambda d: datetime.strptime(d['date'], "%Y-%m-%d %H:%M"))
         return found, error
+
+    def querySnFromBackup(self, sn):
+        """ Backup all the logs on /data partition 
+            root cronjob and have updatedb /var/lib/mlocate/data.db run every 5 minutes
+            We can use locate to do a quick search
+        """
+        cmd = f"ls -tlhgGd --time-style=long-iso `locate -d /var/lib/mlocate/data.db {sn}` | grep \'^-'"
+        result = subprocess.check_output(cmd, shell=True).decode('utf-8').splitlines()
+        found=[]
+        error=[]
+        for line in result:
+            rec=dict()
+            rec['ip']='local'
+            # parsing ls -l output
+            # line['file']=r
+            rec['size'] = line.split()[2]
+            rec['date'] = line.split()[3] + ' ' + line.split()[4]
+            rec['file'] = line.split()[5]
+            found.append(rec)
+        return found, error
+
 
     def scp(self, ip, path, dest):
         """ Copy file to a temporary file location
