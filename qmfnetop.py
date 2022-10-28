@@ -53,8 +53,15 @@ class QMFNetOp:
             root cronjob and have updatedb /var/lib/mlocate/data.db run every 5 minutes
             We can use locate to do a quick search
         """
-        cmd = f"ls -tlhgGd --time-style=long-iso `locate -d /var/lib/mlocate/data.db {sn}` | grep \'^-'"
-        result = subprocess.check_output(cmd, shell=True).decode('utf-8').splitlines()
+        cmd = f"ls -tlhgGd --time-style=long-iso `locate -d /data/locate.db -i {sn}` | grep \'^-'"
+        error = []
+        result = []
+        try:
+            result = subprocess.check_output(cmd, shell=True).decode('utf-8').splitlines()
+        except subprocess.CalledProcessError as e:
+            logging.error(e)
+            error.append(e)
+
         found=[]
         error=[]
         for line in result:

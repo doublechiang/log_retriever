@@ -47,7 +47,7 @@ def get_remotef():
     fpath=request.args['file']
     if ip=='local':
         if fpath.startswith('/data'):
-            return send_file(fpath)
+            return send_file(fpath, as_attachment=True)
         else:
             return 'Do not try to tamper it.'
 
