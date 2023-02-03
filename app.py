@@ -40,7 +40,6 @@ def search(sn=None):
 
     if sn is not None:
         if SEARCH_SIBLING:
-            pass
             found, error = qmfnetop.QMFNetOp().querySnFromBackupSiblings(sn)
         else:
             found, error = qmfnetop.QMFNetOp().querySnFromBackup(sn)
