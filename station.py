@@ -4,8 +4,7 @@ import subprocess
 import queue
 import os
 
-#Discontinued
-class Pxe:
+class Station:
     def cmd(self, cmd):
         """ @brief Execute the cmd and return the output of result
             @return list if the files or the exception

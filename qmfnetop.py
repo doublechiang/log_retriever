@@ -7,7 +7,8 @@ import yaml
 from datetime import datetime
 import queue
 
-import pxe
+# import pxe
+import station
 
 
 class QMFNetOp:
@@ -75,6 +76,42 @@ class QMFNetOp:
             found.append(rec)
         return found, error
 
+    def querySnFromBackupSiblings(self, sn):
+        """ Backup all the logs on /data partition 
+            root cronjob and have updatedb /var/lib/mlocate/data.db run every 5 minutes
+            We can use locate to do a quick search
+            Search through each of the Backup Siblings
+        """
+        threads = []
+        found = []
+        error = []
+        # collect thread call request from quque
+        out_que = queue.Queue()
+
+        if sn is None:
+            return found, error
+        # ls -1rt
+        # -t     sort by modification time
+        cmd = f"ls -tlhgGd --time-style=long-iso `locate -d /data/locate.db -i {sn}` | grep \'^-'"
+        for r in self.racklogs:
+            x=threading.Thread(target=r.find_file, args=(cmd, out_que))
+            threads.append(x)
+            x.start()
+
+        for index, thread in enumerate(threads):
+            thread.join()
+
+        while not out_que.empty():
+            line = out_que.get()
+            if type(line) is subprocess.CalledProcessError:
+                error.append(line)
+            else:
+                found.append(line)
+
+        # The search result append into the list by multiple thread.
+        found.sort(reverse=True, key=lambda d: datetime.strptime(d['date'], "%Y-%m-%d %H:%M"))
+        return found, error
+
 
     def scp(self, ip, path, dest):
         """ Copy file to a temporary file location
@@ -120,9 +157,11 @@ class QMFNetOp:
 
         with open(QMFNetOp.SETTTINGS_FILE, 'r') as cfg:
             log_cfg = yaml.safe_load(cfg)
-            ts = log_cfg.get('STATIONS').split()
+            ts = log_cfg.get('PXE_STATIONS').split()
+            rs = log_cfg.get('RACKLOG_STATIONS').split()
             hop = log_cfg.get('hopStation')
-            self.pxes = list(map(lambda x: pxe.Pxe(x, hop), ts))
+            self.pxes = list(map(lambda x: station.Station(x, hop), ts))
+            self.racklogs = list(map(lambda x: station.Station(x, hop), rs))
 
 if __name__ == "__main__":
     pass
