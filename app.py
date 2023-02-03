@@ -2,12 +2,24 @@
 import os
 from flask import Flask, request, redirect, render_template, url_for
 from flask import send_file
+import yaml
 
 # local import
 import qmfnetop
 
 app = Flask(__name__)
 app.config['APPLICATION_ROOT'] = 'racklog'
+
+SETTTINGS_FILE='settings.yml'
+
+with open(SETTTINGS_FILE, 'r') as cfg:
+        log_cfg = yaml.safe_load(cfg)
+        SEARCH_SIBLING = log_cfg.get('SEARCH_SIBLING')
+        RACKLOG_STATIONS = log_cfg.get('RACKLOG_STATIONS').split()
+LOCAL = ['local']
+for racklog in RACKLOG_STATIONS:
+    LOCAL.append(racklog.split('@')[1])
+
 
 @app.route('/')
 def log_query():
@@ -18,6 +30,8 @@ def log_query():
 @app.route('/query/', methods=['get', 'post'])
 @app.route('/query/<sn>')
 def search(sn=None):
+    global SEARCH_SIBLING
+    
     found = None
     error = []
     if request.method == 'POST':
@@ -25,7 +39,10 @@ def search(sn=None):
         return redirect(url_for('search')+sn)
 
     if sn is not None:
-        found, error = qmfnetop.QMFNetOp().querySnFromBackup(sn)
+        if SEARCH_SIBLING:
+            found, error = qmfnetop.QMFNetOp().querySnFromBackupSiblings(sn)
+        else:
+            found, error = qmfnetop.QMFNetOp().querySnFromBackup(sn)
     return render_template('query.html', found=found, error=error)
 
 @app.route('/queryDist')
@@ -43,9 +60,10 @@ def searchDist(sn=None):
 
 @app.route('/get_remotef')
 def get_remotef():
+    global LOCAL
     ip=request.args['ip']
     fpath=request.args['file']
-    if ip=='local':
+    if ip in LOCAL:
         if fpath.startswith('/data'):
             return send_file(fpath, as_attachment=True)
         else:
