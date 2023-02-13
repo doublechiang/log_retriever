@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import os
-from flask import Flask, request, redirect, render_template, url_for
+from flask import Flask, request, redirect, render_template, url_for, jsonify
 from flask import send_file
 import yaml
+import json
+from datetime import datetime
 
 # local import
 import qmfnetop
@@ -39,10 +41,30 @@ def search(sn=None):
         return redirect(url_for('search')+sn)
 
     if sn is not None:
-        if SEARCH_SIBLING:
-            found, error = qmfnetop.QMFNetOp().querySnFromBackupSiblings(sn)
+        if request.accept_mimetypes.accept_json and not request.accept_mimetypes.accept_html:
+            with open('locations.txt', 'r') as f:
+                data = f.read()
+                records = json.loads(data)
+                try:
+                    if (records[sn]):
+                        return jsonify(records[sn])
+                except KeyError:
+                    return jsonify({'Error': 'Data not found'})
         else:
-            found, error = qmfnetop.QMFNetOp().querySnFromBackup(sn)
+            if SEARCH_SIBLING:
+                record = get_sn_loc(sn)
+                if (record):
+                    found, error = qmfnetop.QMFNetOp().querySnFromBackupSiblings(sn, record['location'])
+                else:
+                    found, error = qmfnetop.QMFNetOp().querySnFromBackupSiblings(sn, None)
+            else:
+                found, error = qmfnetop.QMFNetOp().querySnFromBackup(sn)
+            if (found):
+                location = found[0]['ip']
+                put_sn(sn, location)
+                
+    error = logErrors(error)
+                
     return render_template('query.html', found=found, error=error)
 
 @app.route('/queryDist')
@@ -57,7 +79,6 @@ def searchDist(sn=None):
     return render_template('query.html', found=found, error=error)
 
 
-
 @app.route('/get_remotef')
 def get_remotef():
     global LOCAL
@@ -65,7 +86,7 @@ def get_remotef():
     fpath=request.args['file']
     if ip in LOCAL:
         if fpath.startswith('/data'):
-            return send_file(fpath, as_attachment=True)
+            return send_file(fpath, as_attachment=True) 
         else:
             return 'Do not try to tamper it.'
 
@@ -87,6 +108,42 @@ def memloc():
 def memloc_sn(sn=None):
     found, search_lst = qmfnetop.QMFNetOp().locate_men(sn)
     return render_template('mem_locator.html', found=found, search_lst=search_lst)
+
+#--------------------
+
+# @app.route("/queryPut/<sn>/<location>", methods=["GET","PUT"])
+def put_sn(sn,location):
+    # if request.accept_mimetypes.accept_json and not request.accept_mimetypes.accept_html:
+        with open('locations.txt', 'r') as f:
+                data = f.read()
+        records = json.loads(data)
+        if not data:
+            records = [record]
+        else:    
+            records[sn] = json.loads (f'{{"sn": "{sn}","location": "{location}"}}')
+        with open('locations.txt', 'w') as f:
+                f.write(json.dumps(records, indent=2))
+        return records[sn]
+
+
+def get_sn_loc(sn):
+    with open('locations.txt', 'r') as f:
+        data = f.read()
+        records = json.loads(data)
+        try:
+            if (records[sn]):
+                return records[sn]
+        except KeyError:
+            pass
+        return None
+
+def logErrors(error):
+    if (len(error)>0):
+        with open('logs/errors.txt', 'a') as f:
+            for entry in error:
+                f.write(f"{datetime.now()} : {entry}\n")
+        error = []
+    return error
 
 
 if __name__ == '__main__':
