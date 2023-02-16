@@ -98,7 +98,6 @@ class QMFNetOp:
             
 
         for r in self.racklogs:
-            print (r)
             x=threading.Thread(target=r.find_file, args=(cmd, out_que))
             threads.append(x)
             x.start()
@@ -109,10 +108,12 @@ class QMFNetOp:
         while not out_que.empty():
             line = out_que.get()
             if type(line) is subprocess.CalledProcessError:
-                error.append(line)
+                #Calling grep on no results found will result in a 'returned non-zero exit status 1' which we know will happen since we search through each set racklog sibling
+                if ((line).returncode > 1):
+                    error.append(line)
             else:
                 found.append(line)
-
+        
         # The search result append into the list by multiple thread.
         found.sort(reverse=True, key=lambda d: datetime.strptime(d['date'], "%Y-%m-%d %H:%M"))
         return found, error
@@ -131,10 +132,11 @@ class QMFNetOp:
         # .replace('(', '\(').replace(')', '\)')
         fn = os.path.basename(path)
 
-        # Locate the PXE instance
-        for p in self.pxes:
-            if ip in p.__str__():
-                p.scp(path, dest)
+        # Locate the station instance
+        # for p in self.racklogs or p in self.pxes:
+        for s in (self.pxes + self.racklogs):
+            if ip in s.__str__():
+                s.scp(path, dest)
                 break
         return
 
@@ -144,7 +146,11 @@ class QMFNetOp:
 
         found, search_lst = self.querySn(sn)
         # Get first file and download the content.
-        f = found [0]
+        try:
+            f = found [0]
+        except IndexError as e:
+            return ['SN not Found'],[]
+
         path = f.get('file')
         self.scp(f.get('ip'), path, '/tmp')
         fname = os.path.basename(path)
@@ -162,8 +168,18 @@ class QMFNetOp:
 
         with open(QMFNetOp.SETTTINGS_FILE, 'r') as cfg:
             log_cfg = yaml.safe_load(cfg)
-            ts = log_cfg.get('PXE_STATIONS').split()
-            rs = log_cfg.get('RACKLOG_STATIONS').split()
+            # ts = log_cfg.get('PXE_STATIONS').split()
+            # rs = log_cfg.get('RACKLOG_STATIONS').split()
+            ts = []
+            ts_data = log_cfg.get('PXE_STATIONS')
+            for location in ts_data:
+                ts.extend(ts_data[location].split()) 
+
+            rs = []
+            rs_data = log_cfg.get('RACKLOG_STATIONS')
+            for location in rs_data:
+                rs.append(rs_data[location])
+
             self.hop = log_cfg.get('hopStation')
             self.pxes = list(map(lambda x: station.Station(x, self.hop), ts))
             self.racklogs = list(map(lambda x: station.Station(x, self.hop), rs))
