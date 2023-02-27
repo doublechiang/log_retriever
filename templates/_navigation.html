@@ -1,5 +1,16 @@
-<nav>
-    <a href="{{ url_for('search') }}">Log Search</a> |
-    <a href="{{ url_for('memloc') }}">DIMM Error Locator</a>
+<nav id="nav_bar">
+ <a href="{{ url_for('search') }}">
+  Log Search
+ </a>
+ |
+ <a href="{{ url_for('memloc') }}">
+  DIMM Error Locator
+ </a>
+ |
+ <a href="http://192.168.66.108/QMFRacklog/query" id="station">
+  B2 |
+ </a>
+ <a href="http://192.168.203.33/QMFRacklog/query" id="station" style="font-weight:bold">
+  B3 |
+ </a>
 </nav>
-  
