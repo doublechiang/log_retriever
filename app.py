@@ -8,6 +8,7 @@ from datetime import datetime
 
 # local import
 import qmfnetop
+import navbarStations
 
 app = Flask(__name__)
 app.config['APPLICATION_ROOT'] = 'racklog'
@@ -26,6 +27,11 @@ with open(SETTTINGS_FILE, 'r') as cfg:
 LOCAL = ['local']
 for racklog in RACKLOG_STATIONS:
     LOCAL.append(racklog.split('@')[1])
+
+@app.before_first_request
+def initalize():
+    navbarStations.add_stations()
+
 
 @app.route('/')
 def log_query():
@@ -151,6 +157,7 @@ def get_sn_loc(sn):
         except KeyError:
             pass
         return None
+
 
 if __name__ == '__main__':
     app.run(port=5000)
