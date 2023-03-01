@@ -27,10 +27,10 @@ def add_stations():
 			new_link = soup.new_tag('a')
 			new_link['href'] = f"http://{RACKLOG_SITES[station][0]['IP']}/QMFRacklog/query"
 			new_link['id'] = 'station'
-			new_link.string = station + ' |'
+			new_link.string = station + ' Log Search |'
 			if (RACKLOG_SITES[station][1]['HOME']):
 				new_link['style'] = "font-weight:bold"
-			nav_bar_stations.append(new_link)
+			nav_bar_stations.insert(0,new_link)
 
 
 	with open(HTML_FILE, "wb") as f_output:
