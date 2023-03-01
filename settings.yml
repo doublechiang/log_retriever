@@ -2,12 +2,13 @@ SEARCH_SIBLING: True
 SEARCH_LAST_KNOWN_LOCATION : False
 
 RACKLOG_SITES:
-  B2 : 
-    - IP : '192.168.66.108'
-    - HOME : False
   B3 : 
     - IP : '192.168.203.33'
     - HOME : True
+  B2 : 
+    - IP : '192.168.66.108'
+    - HOME : False
+
 
 RACKLOG_STATIONS:
   B2 : 'log@192.168.66.108'
