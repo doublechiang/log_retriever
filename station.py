@@ -14,7 +14,7 @@ class Station:
             remote_cmd = f"ssh {self.hop} {remote_cmd}"
         logging.debug("Running command {}, hop:".format(remote_cmd, self.hop))
         try:
-            result = subprocess.run(remote_cmd.split(), universal_newlines=True, stdout=subprocess.PIPE, check=True)
+            result = subprocess.run(remote_cmd.split(), universal_newlines=True, stdout=subprocess.PIPE, check=True, timeout = 15)
         except Exception as error:
             # CalledProcesError
             logging.error(error)
