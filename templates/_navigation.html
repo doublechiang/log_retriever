@@ -1,12 +1,14 @@
 <nav id="nav_bar">
- <a href="http://192.168.66.108/QMFRacklog/query" id="station">
-  B2 Log Search |
- </a>
- <a href="http://192.168.203.33/QMFRacklog/query" id="station" style="font-weight:bold">
-  B3 Log Search |
- </a>
- <a href="{{ url_for('memloc') }}">
-  DIMM Error Locator
- </a>
- |
-</nav>
+    <a href="http://redmine.qmfremont.com/redmine" id="station">
+    Home
+    </a>
+    <a href="http://192.168.66.108/QMFRacklog/query" id="station">
+    B2 Log Search
+    </a>
+    <a href="http://192.168.203.33/QMFRacklog/query" id="station" style="text-decoration: underline;">
+    B3 Log Search
+    </a>
+    <a href="{{ url_for('memloc') }}">
+     DIMM Error Locator
+  </a>
+  
