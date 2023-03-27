@@ -28,9 +28,9 @@ LOCAL = ['local']
 for racklog in RACKLOG_STATIONS:
     LOCAL.append(racklog.split('@')[1])
 
-@app.before_first_request
-def initalize():
-    navbarStations.add_stations()
+# @app.before_first_request
+# def initalize():
+#     navbarStations.add_stations()
 
 
 @app.route('/')
