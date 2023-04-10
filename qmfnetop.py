@@ -4,6 +4,7 @@ import os
 import threading
 import logging
 import yaml
+import time
 from datetime import datetime
 import queue
 
@@ -23,7 +24,6 @@ class QMFNetOp:
         error = []
         # collect thread call request from quque
         out_que = queue.Queue()
-
         if sn is None:
             return found, error
         # ls -1rt
@@ -81,26 +81,40 @@ class QMFNetOp:
             We can use locate to do a quick search
             Search through each of the Backup Siblings
         """
+        with open(self.SETTTINGS_FILE, 'r') as cfg:
+            log_cfg = yaml.safe_load(cfg)
+            RACKLOG_SITES = log_cfg.get('RACKLOG_SITES')
+            rs_data = log_cfg.get('RACKLOG_STATIONS')
+
+        stations = {}
+        for station in RACKLOG_SITES:
+            # print (station)
+            stations[rs_data[station].split('@')[1]] = RACKLOG_SITES[station][2]["FOLDERS"]
+
         threads = []
         found = []
         error = []
         # collect thread call request from quque
         out_que = queue.Queue()
-
+        
         if sn is None:
             return found, error
         # ls -1rt
         # -t     sort by modification time
-        cmd = f"ls -tlhgGd --time-style=long-iso `locate -d /data/locate.db -i {sn}` | grep \'^-'"
-
+        # cmd = f"ls -tlhgGd --time-style=long-iso `locate -d /data/locate.db -i {sn}` | grep \'^-'"
+        # cmd = f"ls -tlhgGd --time-style=long-iso `locate -d /data/{folder}/locate.db -i {sn}` | grep \'^-'"
         if (location):
             self.racklogs = list(map(lambda x: station.Station(x, self.hop), [f'log@{location}']))
             
 
         for r in self.racklogs:
-            x=threading.Thread(target=r.find_file, args=(cmd, out_que))
-            threads.append(x)
-            x.start()
+            hostName = str(r).split('@')[1]
+            for station in stations[hostName].split():
+                cmd = f"ls -tlhgGd --time-style=long-iso `locate -d /data/{station}/locate.db -i {sn}` | grep \'^-'"
+                x=threading.Thread(target=r.find_file, args=(cmd, out_que))
+                time.sleep(0.05)
+                threads.append(x)
+                x.start()
 
         for index, thread in enumerate(threads):
             thread.join()
